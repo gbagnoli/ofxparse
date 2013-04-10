@@ -1,16 +1,9 @@
 import decimal
 import datetime
 import codecs
-import mcc
+from . import mcc
 import re
-
-def soup_maker(fh):
-    try:
-        from bs4 import BeautifulSoup
-        return BeautifulSoup(fh)
-    except ImportError:
-        from BeautifulSoup import BeautifulStoneSoup
-        return BeautifulStoneSoup(fh)
+from bs4 import BeautifulSoup
 
 
 class OfxFile(object):
@@ -205,7 +198,7 @@ class OfxParser(object):
         ofx_obj.headers = ofx_file.headers
         ofx_obj.accounts = []
 
-        ofx = soup_maker(ofx_file.fh)
+        ofx = BeautifulSoup(ofx_file.fh)
         if len(ofx.contents) == 0:
             raise OfxParserException('The ofx file is empty!')
 
@@ -278,10 +271,10 @@ class OfxParser(object):
             else:
                 continue
 
-	        fi_ofx = ofx.find('fi')
-	        if fi_ofx:
-	            for account in ofx_obj.accounts:
-	                account.institution = cls_.parseOrg(fi_ofx)
+            fi_ofx = ofx.find('fi')
+            if fi_ofx:
+                for account in ofx_obj.accounts:
+                    account.institution = cls_.parseOrg(fi_ofx)
             desc = i.find('desc')
             if hasattr(desc, 'contents'):
                 for account in accounts:
@@ -414,7 +407,7 @@ class OfxParser(object):
                     statement.warnings.append(u'Empty start date.')
                     if cls_.fail_fast:
                         raise
-                except ValueError, e:
+                except ValueError as e:
                     statement.warnings.append(u'Invalid start date: %s' % e)
                     if cls_.fail_fast:
                         raise
@@ -426,7 +419,7 @@ class OfxParser(object):
                         tag.contents[0].strip())
                 except IndexError:
                     statement.warnings.append(u'Empty end date.')
-                except ValueError, e:
+                except ValueError as e:
                     statement.warnings.append(u'Invalid end date: %s' % e)
                     if cls_.fail_fast:
                         raise
@@ -437,7 +430,7 @@ class OfxParser(object):
                     statement.positions.append(
                         cls_.parseInvestmentPosition(investment_ofx))
             except (ValueError, IndexError, decimal.InvalidOperation,
-                    TypeError), e:
+                    TypeError) as e:
                 if cls_.fail_fast:
                     raise
                 statement.discarded_entries.append(
@@ -451,7 +444,7 @@ class OfxParser(object):
                 for investment_ofx in invstmtrs_ofx.findAll(transaction_type):
                     statement.transactions.append(
                         cls_.parseInvestmentTransaction(investment_ofx))
-            except (ValueError, IndexError, decimal.InvalidOperation), e:
+            except (ValueError, IndexError, decimal.InvalidOperation) as e:
                 if cls_.fail_fast:
                     raise
                 statement.discarded_entries.append(
@@ -528,7 +521,7 @@ class OfxParser(object):
                     u"Statement start date was empty for %s" % stmt_ofx)
                 if cls_.fail_fast:
                     raise
-            except ValueError, ve:
+            except ValueError as ve:
                 statement.warnings.append(
                     u"Statement start date was not formatted correctly for"
                     u" %s" % stmt_ofx)
@@ -557,7 +550,7 @@ class OfxParser(object):
                 try:
                     statement.balance = decimal.Decimal(
                         balamt_tag.contents[0].strip())
-                except (IndexError, decimal.InvalidOperation), ex:
+                except (IndexError, decimal.InvalidOperation) as ex:
                     statement.warnings.append(
                         u"Ledger balance amount was empty for %s" % stmt_ofx)
                     if cls_.fail_fast:
@@ -570,7 +563,7 @@ class OfxParser(object):
                 try:
                     statement.available_balance = decimal.Decimal(
                         balamt_tag.contents[0].strip())
-                except (IndexError, decimal.InvalidOperation), ex:
+                except (IndexError, decimal.InvalidOperation) as ex:
                     statement.warnings.append(u"Available balance amount was"
                                               u" empty for %s" % stmt_ofx)
                     if cls_.fail_fast:
@@ -580,7 +573,7 @@ class OfxParser(object):
             try:
                 statement.transactions.append(
                     cls_.parseTransaction(transaction_ofx))
-            except OfxParserException, ofxError:
+            except OfxParserException as ofxError:
                 statement.discarded_entries.append(
                     {'error': str(ofxError), 'content': transaction_ofx})
                 if cls_.fail_fast:
@@ -649,7 +642,7 @@ class OfxParser(object):
                     date_tag.contents[0].strip())
             except IndexError:
                 raise OfxParserException("Invalid Transaction Date")
-            except ValueError, ve:
+            except ValueError as ve:
                 raise OfxParserException(str(ve))
             except TypeError:
                 raise OfxParserException(
@@ -672,7 +665,7 @@ class OfxParser(object):
         sic_tag = txn_ofx.find('sic')
         if hasattr(sic_tag, 'contents'):
             try:
-				transaction.sic = sic_tag.contents[0].strip()
+                transaction.sic = sic_tag.contents[0].strip()
             except IndexError:
                 raise OfxParserException(u"Empty transaction Standard Industry Code (SIC)")
 

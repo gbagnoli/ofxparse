@@ -9,15 +9,9 @@ VERSION = re.search(r"__version__ = '(.*?)'",
 
 import platform
 python_v = platform.python_version_tuple()
-if int(python_v[0]) == 2 and int(python_v[1]) < 6:
-    # python 2.5 (and presumably 2.4) does not like beautiful soup 4
-    REQUIRES = [
-        "beautifulSoup>=3.0",
-    ]
-else:
-    REQUIRES = [
-        "beautifulsoup4"
-    ]
+REQUIRES = [
+    "beautifulsoup4"
+]
 
 setup(name='ofxparse',
       version=VERSION,
